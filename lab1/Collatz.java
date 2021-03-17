@@ -14,7 +14,7 @@ public class Collatz {
         } else {
             return (n * 3) + 1;
         }
-        
+
     }
 
     public static void main(String[] args) {
