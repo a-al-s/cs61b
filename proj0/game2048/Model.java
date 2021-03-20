@@ -137,7 +137,20 @@ public class Model extends Observable {
      *  Empty spaces are stored as null.
      * */
     public static boolean emptySpaceExists(Board b) {
-        // TODO: Fill in this function.
+        // Loop over the columns
+        for (int col = 0; col < b.size(); col += 1) {
+            // Loop over the rows
+            for (int row = 0; row < b.size(); row += 1) {
+                // iterate over all the tiles
+                Tile tile = b.tile(col, row);
+                // check if the tile value = 0
+                if (tile == null) {
+                    // if so then return true
+                    return true;
+                }
+            }
+        }
+        // after the loop finished return false
         return false;
     }
 
@@ -147,9 +160,25 @@ public class Model extends Observable {
      * given a Tile object t, we get its value with t.value().
      */
     public static boolean maxTileExists(Board b) {
-        // TODO: Fill in this function.
+        // Loop over the columns
+        for (int col = 0; col < b.size(); col += 1) {
+            // Loop over the rows
+            for (int row = 0; row < b.size(); row += 1) {
+                // iterate over all the tiles
+                Tile tile = b.tile(col, row);
+                // check if the tile value = MAX_PIECE
+                if (tile != null) {
+                    if (tile.value() == MAX_PIECE) {
+                        // if so then return true
+                        return true;
+                    }
+                }
+            }
+        }
+        // after the loop finished return false
         return false;
     }
+
 
     /**
      * Returns true if there are any valid moves on the board.
@@ -159,6 +188,47 @@ public class Model extends Observable {
      */
     public static boolean atLeastOneMoveExists(Board b) {
         // TODO: Fill in this function.
+        // Loop over the columns
+        for (int col = 0; col < b.size(); col += 1) {
+            // Loop over the rows
+            for (int row = 0; row < b.size(); row += 1) {
+                // iterate over all the tiles
+                Tile tile = b.tile(col, row);
+                // check if the tile is empty which means empty space
+                if (tile == null) {
+                    return true;
+                } else {
+                    // we should check if there are two adjacent tiles with the same value
+                    int value = tile.value();
+                    int upCol = ((col - 1) >= 0) ? col - 1 : 0;
+                    int downCol = ((col + 1) < 4) ? col + 1 : 3;
+                    int upRow = ((row - 1) >= 0) ? row - 1 : 0;
+                    int downRow = ((row + 1) < 4) ? row + 1 : 3;
+                    // we have a max of 4 possibilities
+                    if (value == b.tile(upCol, row).value()) {
+                        if (col != 0) {
+                            return true;
+                        }
+                    }
+                    if (value == b.tile(downCol, row).value()) {
+                        if (col != 3) {
+                            return true;
+                        }
+                    }
+                    if (value == b.tile(col, upRow).value()) {
+                        if (row != 0) {
+                            return true;
+                        }
+                    }
+                    if (value == b.tile(col, downRow).value()) {
+                        if (row != 3) {
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+        // after the loop finished return false
         return false;
     }
 
