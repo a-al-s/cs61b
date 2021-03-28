@@ -1,5 +1,6 @@
 package game2048;
 
+import java.lang.reflect.Array;
 import java.util.Formatter;
 import java.util.Observable;
 
@@ -113,13 +114,268 @@ public class Model extends Observable {
         // TODO: Modify this.board (and perhaps this.score) to account
         // for the tilt to the Side SIDE. If the board changed, set the
         // changed local variable to true.
+        ///////////////////////////////////////////////////////////////////
+        // the state of the board
+        // the side to check is north so use column to check for empty spaces or merges
+        // create a method that take a col find the empty spaces
+        // store them on an array emptySpaceArray as int starting from col #3 down to col #0
+        // then recursively starting from col #3 down to col #0
 
-        checkGameOver();
-        if (changed) {
-            setChanged();
+        //////////////////////////////////////////////////////////////////
+        // loop over the columns
+//        int emptyRow;
+//
+//        for (int col = 0; col < board.size(); col++) {
+//            for (int row = board.size() - 1; row >= 0; row--) {
+//                // iterate over all the tiles
+//                Tile tile = board.tile(col, row);
+//                // check if the tile value = 0
+//                if (tile == null) {
+//                    emptyRow = row;
+//                    int nonEmptyTileRowNumber = findTile(board, col, row-1);
+//                    if (nonEmptyTileRowNumber != -1) {
+//                        Tile movableTile = board.tile(col, nonEmptyTileRowNumber);
+//                        board.move(col, emptyRow, movableTile);
+//                        changed = true;
+//                    }
+//                }
+//            }
+//        }
+
+        // testUpNoMerge() PASS
+//        for (int c = 0; c < board.size(); c++) {
+//            // for each columns loop over the rows
+//            for (int r = 0; r < board.size(); r++) {
+//                // for each cell take the tile
+//                Tile t = board.tile(c, r);
+//                // if that tile not null (it has a value)
+//                if (t != null) {
+//                    // set emptyRow to -1
+//                    int emptyRow = -1;
+//                    // loop over the row from the top till above the current row
+//                    for (int row = board.size() - 1; row > r; row--) {
+//                        // if you find an empty row set emptyRow to it
+//                        if (board.tile(c, row) == null) {
+//                            emptyRow = row;
+//                        }
+//                    }
+//                    // move the tile that you find to the empty row above it
+//                    board.move(c, emptyRow != -1 ? emptyRow: r, t);
+//                    // set the changed value to update the GUI
+//                    changed = true;
+//
+//                }
+//
+//            }
+//        }
+
+
+
+//        // testUpBasicMerge()
+//        // loop over the columns
+//        for (int c = 0; c < board.size(); c++) {
+//            // for each columns loop over the rows
+//            for (int r = 0; r < board.size(); r++) {
+//                // for each cell take the tile
+//                Tile t = board.tile(c, r);
+//                // if that tile not null (it has a value)
+//                if (t != null) {
+//                    // set emptyRow to -1
+//                    int emptyRow = -1;
+//                    // loop over the row from the top till above the current row
+//                    for (int row = board.size() - 1; row > r; row--) {
+//                        // if you find an empty row set emptyRow to it
+//                        if (board.tile(c, row) == null) {
+//                            emptyRow = row;
+//                        }
+//                        //////////////////////////////////////////////////////////////////////
+//
+//                        // check the row above if it has a similar value to merge
+//                        if (row <= board.size() - 2) {
+//                            int tileVal = (board.tile(c, row + 1) != null) ? board.tile(c, row + 1).value(): -1;
+//                            if (tileVal == t.value()) {
+//                                emptyRow = row + 1;
+//                            }
+//                        }
+//                    }
+//
+//                    // move the tile that you find to the empty row above it
+//                    board.move(c, emptyRow != -1 ? emptyRow : r, t);
+//                    // set the changed value to update the GUI
+//                    changed = true;
+//
+//                }
+//            }
+//        }
+
+//        ///////////////////////////////////////////////////////////////////
+//         // use String to store each column
+//        String[] columns = new String[4];
+//
+//        // loop over the columns and assign them to the array
+//        for (int c = 0; c < board.size(); c ++) {
+//            String column = "";
+//            for (int r = board.size() -1; r >= 0; r--) {
+//                Tile t = board.tile(c, r);
+//                int value = (t != null) ? t.value() : 0;
+//                column += String.valueOf(value);
+//            }
+//            columns[c] = column;
+//            System.out.println(column);
+//
+//        }
+//        System.out.println("--------------");
+//        play(columns);
+//
+//
+
+
+        boolean[] isMerged = {false, false, false, false};
+        for (int c = 0; c < board.size(); c++) {
+            for (int r = board.size()-1; r >= 0 ; r--) {
+                // check the most upper tile if its empty
+                Tile t = board.tile(c, r);
+
+                if (t == null) {
+                    // if the whole col is empty then break
+                    int value = tiltASingleTile(board, c, r, true, isMerged);
+                    if (value > 0) {
+                        changed = true;
+                        score += value;
+                        isMerged[r+1] = true;
+                        r++;
+                    }
+
+                } else {
+                    if(r < 3) {
+                        Tile tileAbove = board.tile(c, r+1);
+                        int valueAbove = tileAbove.value();
+                        if(t.value() == valueAbove) {
+                            if (!isMerged[r+1] && !isMerged[r]) {
+                                board.move(c, r+1, t);
+                                changed = true;
+                                score += valueAbove * 2;
+                                r++;
+                            }
+                        }
+                    }
+                }
+            }
         }
-        return changed;
+
+
+
+//        ///////////////////////////////////////////////////////////////////
+        checkGameOver();    //
+        if (changed) {      //
+            setChanged();   //
+        }                   //
+        return changed;     //
+    }                       //
+//    /////////////////////////////////////////////////////////////////
+
+    private static int tiltASingleTile(Board b, int callerColumn, int callerRow, boolean isCallerEmpty, boolean[] isMerged) {
+        if (isCallerEmpty) {
+            for (int i = callerRow-1; i >= 0; i--) {
+                Tile t = b.tile(callerColumn, i);
+                if (t != null) {
+                    int value = t.value();
+                    if (callerRow == 3) {
+                        b.move(callerColumn, callerRow, t);
+                        return 0;
+                    } else {
+                        Tile tileAbove = b.tile(callerColumn, callerRow+1);
+                        int tileAboveValue = (tileAbove != null) ? tileAbove.value() : -1;
+                        if ((t.value() == tileAboveValue) && (!isMerged[callerRow+1]) && (!isMerged[callerRow])) {
+                            b.move(callerColumn, callerRow + 1, t);
+                            isMerged[callerRow+1] = true;
+                            return value * 2;
+                        } else {
+                            b.move(callerColumn, callerRow , t);
+                            return 0;
+                        }
+                    }
+
+                }
+            }
+            return -1;
+        }
+        return -1;
     }
+
+//    private static void play(String[] arr) {
+//        int[] emptyArr = {-1, -1, -1, -1};
+//        int[] nonEmptyArr = {-1, -1, -1, -1};
+//        int[] tileValues = {-1, -1, -1, -1};
+//        int emptyTiles = 0;
+//        int nonEmptyTiles = 0;
+//
+//        int[] allTileValues = new int[4];
+//
+//        for (int c = 0; c < arr.length; c++) {
+//            // find the first non-zero value and switch its value with the first zero value
+//            // find how many non-zero tiles
+//            for (int i=0; i < arr[c].length(); i++) {
+//                int num = Integer.valueOf(arr[c].charAt(i));
+//                allTileValues[i] = num;
+//                if (num != 0) {
+//                    nonEmptyTiles += 1;
+//                    nonEmptyArr[nonEmptyTiles - 1] = i;
+//                    tileValues[nonEmptyTiles - 1] = num;
+//                } else {
+//                    emptyTiles += 1;
+//                    emptyArr[emptyTiles - 1] = i;
+//                }
+//            }
+//
+//            // Merge
+//            for (int i = 0; i < allTileValues.length - 1; i++) {
+//                if ((allTileValues[i] != 0) && (allTileValues[i] == allTileValues[i+1])) {
+//                    // merge
+//                    allTileValues[i] += allTileValues[i+1];
+//                    allTileValues[i+1] = 0;
+//                }
+//            }
+//
+//            if ((nonEmptyTiles > 0) && (emptyTiles > 0)) {
+//                // loop over tileValues array and if there are two adjacent identical values merge them
+//                // do not merge an already merged cell
+//                for (int i = 0; i < tileValues.length; i++) {
+//                    if ((tileValues[i] != -1) && (i < tileValues.length - 1)) {
+//                        if (tileValues[i] == tileValues[i+1]) {
+//                            // merge them
+//                            tileValues[i] += tileValues[i+1];
+//                            tileValues[i+1] = -1;
+//                            // delete the i+1 index and add it to the empty cells
+//                            nonEmptyArr[i+1] = -1;
+//                        }
+//                    }
+//                }
+//
+//            }
+//        }
+//    }
+//
+
+//    private static int calculatePosition(int stringIndex) {
+//        return 3 - stringIndex;
+//    }
+
+
+    /////////////////////////////////////////////////////////////////
+
+//    private static int findTile(Board b, int col, int r) {
+//        for (int row = r; row >= 0; row--) {
+//            // iterate over all the tiles
+//            Tile tile = b.tile(col, row);
+//            // check if the tile value = 0
+//            if (tile != null) {
+//                return row;
+//            }
+//        }
+//        return -1;
+//    }
+    ////////////////////////////////////////////////////////////////
 
     /** Checks if the game is over and sets the gameOver variable
      *  appropriately.
@@ -187,7 +443,6 @@ public class Model extends Observable {
      * 2. There are two adjacent tiles with the same value.
      */
     public static boolean atLeastOneMoveExists(Board b) {
-        // TODO: Fill in this function.
         // Loop over the columns
         for (int col = 0; col < b.size(); col += 1) {
             // Loop over the rows
